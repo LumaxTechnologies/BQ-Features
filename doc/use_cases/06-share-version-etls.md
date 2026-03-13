@@ -12,7 +12,7 @@ ETLs are code: SQL, SQLX, and configs. They should live in version control (Git)
 
 | Asset | Description | Where it lives |
 |-------|-------------|----------------|
-| **Queries** | Single or multi-statement GoogleSQL (SELECT, DDL, DML). Ad-hoc (unsaved) or saved. | Query editor (session) or **repository** (saved query). |
+| **Queries** | Single or multi-statement GoogleSQL (SELECT; DDL = Data Definition Language, e.g. CREATE/ALTER/DROP; DML = Data Manipulation Language, e.g. INSERT/UPDATE/DELETE). Ad-hoc (unsaved) or saved. | Query editor (session) or **repository** (saved query). |
 | **Stored procedures** | Named routines in a dataset: procedural logic (variables, IF/WHILE, parameters). Called with `CALL dataset.procedure_name(args)`. | **Dataset** (as a routine). Source can be versioned in a repo or Terraform. |
 | **Dataform assets** | SQLX tables, views, operations (custom SQL, including `CALL` to procedures). | **Dataform repository** (Git). |
 | **Notebooks** | Python + SQL (Colab Enterprise); versioned and shareable. | **Repository**. |
