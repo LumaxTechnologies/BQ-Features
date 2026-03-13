@@ -32,7 +32,7 @@ Analysts and engineers need repeatable pipelines that land raw files, clean and 
 ### 3. Layer 1 → Layer 2 (transform in BQ)
 
 - Use **Dataform** operations or **saved queries** that read from staging and write to the main dataset. Example (already in the demo): `refresh_daily_pnl_summary.sqlx` reads `pnl_daily` and writes `daily_pnl_summary`; you can add similar operations that read from `bq_studio_demo_staging` and write to `bq_studio_demo`.
-- Or use **Data preparations**: source = staging table, add steps (parse dates, computed columns, filters), destination = refined table in `bq_studio_demo`.
+- Or use **Data preparations**: source = staging table, add steps (parse dates, computed columns, filters), destination = refined table in `bq_studio_demo`. Step-by-step: [Data preparations – demo material](../features/1-studio/data-preparations.md#demo-material). The same flow is described in the **No-code / AI alternatives** section below.
 
 ### 4. Add a third layer (optional)
 

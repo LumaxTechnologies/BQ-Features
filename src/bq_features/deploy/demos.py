@@ -21,13 +21,14 @@ def run_deploy_demos(
     with_looker: bool,
     upload_to_gcs: bool,
     with_demo_data: bool,
+    deploy_dataform: bool,
     csv_dir: Path | None,
     dataset_prefix: str,
     bucket_prefix: str,
     dry_run: bool,
     config: dict,
 ) -> None:
-    """Generate and upload demo SQL, notebooks, docs; optionally load demo data into BQ and GCS."""
+    """Generate and upload demo SQL, notebooks, docs; optionally load demo data into BQ and GCS; optionally deploy Dataform workspace and .sqlx."""
     dataset_id = dataset_prefix
     bucket_name = f"{bucket_prefix}-{project_id}".replace("_", "-").lower()
 
@@ -47,6 +48,8 @@ def run_deploy_demos(
             click.echo(f"  - Upload notebooks to gs://{bucket_name}/notebooks/")
             click.echo(f"  - Upload docs (and docs/use_cases/) to gs://{bucket_name}/docs/")
             click.echo(f"  - Upload Dataform operations to gs://{bucket_name}/dataform/")
+        if deploy_dataform:
+            click.echo("  - Create Dataform demo-workspace (if missing) and deploy .sqlx into it")
         return
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -68,6 +71,12 @@ def run_deploy_demos(
 
     if with_schedulers:
         _create_schedulers(project_id, region, dataset_id, config)
+
+    if deploy_dataform:
+        from bq_features.deploy.dataform_deploy import deploy_dataform_workspace
+
+        click.echo("Dataform: ensuring demo-workspace and deploying .sqlx ...")
+        deploy_dataform_workspace(project_id, region, output_dir.resolve())
 
     if upload_to_gcs:
         click.echo(f"Uploading to gs://{bucket_name}/ ...")

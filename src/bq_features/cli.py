@@ -188,6 +188,12 @@ def deploy_infra(
     help="Load bundled finance demo data into BigQuery and GCS (demo_data/).",
 )
 @click.option(
+    "--deploy-dataform/--no-deploy-dataform",
+    "deploy_dataform",
+    default=True,
+    help="Create Dataform demo-workspace (if missing) and deploy .sqlx files into it.",
+)
+@click.option(
     "--csv-dir",
     type=click.Path(exists=True, path_type=Path),
     default=None,
@@ -218,6 +224,7 @@ def deploy_demos(
     with_looker: bool,
     upload_to_gcs: bool,
     with_demo_data: bool,
+    deploy_dataform: bool,
     csv_dir: Path | None,
     dataset_prefix: str,
     bucket_prefix: str,
@@ -244,6 +251,7 @@ def deploy_demos(
         with_looker=with_looker,
         upload_to_gcs=upload_to_gcs,
         with_demo_data=with_demo_data,
+        deploy_dataform=deploy_dataform,
         csv_dir=csv_dir,
         dataset_prefix=dataset_prefix,
         bucket_prefix=bucket_prefix,

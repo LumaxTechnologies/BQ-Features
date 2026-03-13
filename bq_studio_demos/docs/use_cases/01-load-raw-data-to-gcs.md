@@ -10,27 +10,19 @@ Analysts receive data as files (exports, feeds). The first step is to land them 
 
 ## Demo resources
 
-- **CLI:** `bqdemo deploy infra` creates the demo GCS bucket (e.g. `gs://bq-studio-demo-<project_id>/`).
-- **Bundled CSVs:** The CLI uploads bundled finance demo CSVs to the bucket when you run `bqdemo deploy demos` (they go under `demo_data/`: `portfolio_holdings.csv`, `daily_prices.csv`, `transactions.csv`, `pnl_daily.csv`).
-- **Your own files:** Place CSV or Excel files in a local directory and use the same bucket paths for a custom load (see below).
+- **GCS bucket:** The demo project has a GCS bucket (e.g. `gs://bq-studio-demo-<project_id>/`).
+- **Bundled CSVs:** Bundled finance demo CSVs may be present under `demo_data/` (`portfolio_holdings.csv`, `daily_prices.csv`, `transactions.csv`, `pnl_daily.csv`).
+- **Your own files:** Place CSV or Excel files in a local directory and upload them to the same bucket paths (see below).
 
 ## Steps
 
-### 1. Create the bucket (if not already done)
+### 1. Ensure the bucket exists
 
-```bash
-bqdemo deploy infra
-```
+The demo project should have a bucket such as `gs://bq-studio-demo-<project_id>/`. If you are setting up from scratch, create the bucket in **Cloud Console** → **Cloud Storage** → **Create bucket**, or use your project’s deployment process.
 
-This creates the bucket `gs://bq-studio-demo-<project_id>/` (or your configured `bucket_prefix`). No demo data is loaded yet.
+### 2. Ensure bundled demo CSVs are in the bucket (if applicable)
 
-### 2. Load bundled demo CSVs into the bucket
-
-```bash
-bqdemo deploy demos
-```
-
-This uploads the bundled CSV files from the CLI package to `gs://<bucket>/demo_data/`. You can inspect them in the Cloud Console (**Cloud Storage** → your bucket → `demo_data/`).
+If your project deploys demo data, the bundled CSV files will be under `gs://<bucket>/demo_data/`. Inspect them in **Cloud Storage** → your bucket → `demo_data/`.
 
 ### 3. Load your own CSV or Excel files
 
@@ -44,19 +36,23 @@ This uploads the bundled CSV files from the CLI package to `gs://<bucket>/demo_d
 
 ### 4. Optional: Load your own CSV directory into BigQuery
 
-To load your own CSV directory into BQ (instead of the bundled demo data):
-
-```bash
-bqdemo deploy demos --csv-dir /path/to/your/csvs --no-demo-data
-```
-
-Table names in BQ will match the CSV filenames (without extension). The same files are also uploaded to the bucket under `demo_data/`.
+To load your own CSV directory into BQ: upload the CSVs to the bucket (e.g. under `raw/` or `demo_data/`), then in **BigQuery Studio** use **Create table** → source **Google Cloud Storage**, select the GCS path(s). Table names can match the CSV filenames (without extension). Alternatively use **Load data** from the table menu for each file.
 
 ## What you get
 
 - GCS bucket with a known prefix (e.g. `bq-studio-demo-<project_id>`).
 - `demo_data/` (and optionally `raw/`) containing CSV (and optionally Excel) files.
-- Optionally, BigQuery tables populated from those files (when using `bqdemo deploy demos` with default `--with-demo-data` or `--csv-dir`).
+- Optionally, BigQuery tables populated from those files (via your project’s deployment or via Create table / Load data from GCS in BigQuery Studio).
+
+## No-code / AI alternatives (BI analysts and non-developers)
+
+You can achieve the same outcome without the CLI:
+
+- **Create or use a bucket:** In **Google Cloud Console** → **Cloud Storage** → **Buckets**, create a bucket (or use an existing one your admin has set up). No `gsutil` or terminal required.
+- **Upload files:** In the bucket view, use **Upload files** or **Upload folder** (drag-and-drop) to upload CSV or Excel files into a prefix such as `raw/` or `demo_data/`. No command line needed.
+- **Bulk or recurring loads:** Use **Transfer Service** (Console → **Transfer** or **BigQuery Data Transfer**) to schedule uploads from other clouds or from on-premises; the UI guides you through source and destination. For one-off loads, manual upload is enough.
+
+If the bucket already exists (e.g. created by an admin), you can upload your own files into it via the Console only.
 
 ## Next
 

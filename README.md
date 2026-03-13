@@ -38,7 +38,7 @@ CLI to deploy **BigQuery datasets**, **GCS buckets**, and **BigQuery Studio**–
 
 - **Demo data**: load bundled finance CSVs into BigQuery and upload to GCS (`demo_data/`), or use `--csv-dir` for your own CSVs. Omit with `--no-demo-data`.
 - **SQL scripts**: runnable in BigQuery Studio (portfolio value, returns/volatility, PnL by strategy, load-from-GCS example).
-- **Dataform operations**: SQLX operations that run against the demo data and materialize tables (`daily_pnl_summary`, `portfolio_value_snapshot`, `returns_volatility`). Copy into a Dataform repo to run or schedule.
+- **Dataform operations**: SQLX operations that run against the demo data and materialize tables (`daily_pnl_summary`, `portfolio_value_snapshot`, `returns_volatility`). By default, `deploy demos` creates a **Dataform demo-workspace** (if none exists) in your project and deploys these `.sqlx` files into it; use `--no-deploy-dataform` to skip. The same files are also uploaded to `gs://<bucket>/dataform/` when uploading to GCS.
 - **Jupyter notebook**: finance analytics (load from BQ, time series, PnL charts); suitable for Vertex AI Workbench or Colab Enterprise.
 - **Documentation**:
   - **Gemini in BigQuery Studio**: how to use the embedded GCP LLM to generate SQL, explain queries, and get insights.
@@ -344,6 +344,7 @@ bq_studio_demos/
 | `--with-schedulers` / `--no-schedulers` | Create scheduled query (demos). |
 | `--with-looker` / `--no-looker` | Emit Looker instructions and LookML (demos). |
 | `--upload-to-gcs` / `--no-upload-to-gcs` | Upload SQL, notebooks, and docs to the demo GCS bucket (demos; default: on). |
+| `--deploy-dataform` / `--no-deploy-dataform` | Create Dataform demo-workspace (if missing) and deploy .sqlx into it (demos; default: on). |
 
 **Docs commands:** `bqdemo docs inject-project-id` copies `doc/` to a folder (default `doc_with_project/`) with `YOUR_PROJECT` and `<project_id>` replaced by your project ID for easy copy/paste. `bqdemo docs export-docx` exports `doc/` to `doc_export/`: each root `.md` becomes one `.docx`; each subfolder (`features`, `use_cases`) becomes one consolidated `.docx` with all `.md` inside merged in numerical order, **mirroring the folder structure** (one .docx per .md file) (requires [pandoc](https://pandoc.org/installing.html)) for SharePoint upload.
 

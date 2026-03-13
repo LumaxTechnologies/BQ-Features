@@ -62,6 +62,14 @@ Order operations in Dataform so that: (1) tables are loaded or updated, (2) the 
 - A Dataform operation that invokes it, so the procedure runs as part of the ETL.
 - A pattern for versioning procedure DDL and calling it from scheduled ETLs.
 
+## No-code / AI alternatives (BI analysts and non-developers)
+
+Stored procedures are code (SQL with variables and control flow). For most BI use cases you can avoid them:
+
+- **Data preparations:** Use **validation steps** and **filter steps** in a data preparation to enforce rules (e.g. “Keep only rows where amount > 0”, “Send failing rows to an error table”). That covers many “business rule” needs without a procedure.
+- **Pipelines:** Chain several **data preparations** and **SQL tasks** in a **Pipeline** (Create new → Pipeline). The pipeline runs them in order; no `CALL` or procedure required. Use the **Data Engineering Agent** to describe the flow in natural language and let it suggest the tasks.
+- **When procedures are needed:** If you need parameterized or multi-step logic that cannot be expressed in a single data preparation (e.g. conditional DDL, loops), ask a developer to add a stored procedure and expose it via a Dataform operation, or use the Data Engineering Agent to generate procedure-like logic from a plain-language description. As a BI analyst, you can then trigger the same pipeline from the UI without editing the procedure.
+
 ## Next
 
 - **Use case 6:** Share and version the ETLs (including the procedure and the Dataform repo).

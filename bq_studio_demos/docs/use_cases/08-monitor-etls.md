@@ -11,7 +11,7 @@ Scheduled and ad-hoc ETL jobs produce BigQuery jobs and (for Dataform) execution
 ## Demo resources
 
 - **Administration:** [monitoring.md](../features/4-administration/monitoring.md), [jobs.md](../features/4-administration/jobs.md).
-- **Demo jobs:** After running `bqdemo deploy demos --with-schedulers` and triggering a Dataform run, jobs will appear in the Jobs explorer and in resource charts.
+- **Demo jobs:** After scheduled queries or Dataform runs are configured and executed, jobs will appear in the Jobs explorer and in resource charts.
 - **Cloud Logging / Monitoring:** For Dataform, execution logs and (if configured) alerting on failure.
 
 ## Steps
@@ -43,6 +43,16 @@ Scheduled and ad-hoc ETL jobs produce BigQuery jobs and (for Dataform) execution
 
 - Visibility into ETL job success, duration, and cost.
 - A path to alerting and runbooks for the financial team.
+
+## No-code / AI alternatives (BI analysts and non-developers)
+
+Monitoring in BigQuery is UI-driven; no code is required:
+
+- **Jobs explorer:** In **BigQuery** → **Administration** → **Jobs**, filter by project, time range, and job type (Query, Load). Open any job to see SQL, duration, bytes processed, and errors. Use this to confirm scheduled data preparations and pipelines ran successfully or to debug failures.
+- **Dataform / pipeline runs:** If you use **Dataform** or **Pipelines**, open **Executions** (or the run history) in the same console. Click a run to see which steps succeeded or failed and view logs. No scripts or APIs needed.
+- **Cloud Monitoring and alerting:** In **Cloud Console** → **Monitoring**, use pre-built or custom dashboards for BigQuery (e.g. job count, errors, slot time). Create **alerting policies** in the UI: e.g. “Alert when query jobs fail” or “Alert when a specific transfer config fails.” Add notification channels (email, Slack, etc.) via the UI.
+
+BI analysts and non-developers can own day-to-day monitoring and first-line troubleshooting using only the Console and Monitoring UIs; alerting can be configured without writing code.
 
 ## Next
 
