@@ -1,0 +1,21 @@
+# BigQuery Studio Features Demo - Configuration
+# Copy to bq_features_config.yaml and set your project_id.
+
+project_id: YOUR_GCP_PROJECT_ID
+
+# Optional: default region for BigQuery datasets (e.g. US, EU, us-central1)
+region: US
+
+# Infra defaults (can be overridden via CLI)
+infra:
+  bucket_prefix: bq-studio-demo
+  dataset_prefix: bq_studio_demo
+
+# Demos: enable/disable optional components
+demos:
+  with_schedulers: true
+  with_looker: false
+  upload_to_gcs: true   # upload SQL, notebooks, docs to demo GCS bucket
+
+# Optional: service account key path for scheduled queries (if not using ADC)
+# service_account_key_path: /path/to/key.json
