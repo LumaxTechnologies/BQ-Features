@@ -17,6 +17,4 @@ These demos follow a typical workflow for a **financial department analyst team*
 | 9 | Data science modelling on data | [09-data-science-modelling.md](09-data-science-modelling.md) |
 | 10 | Industrialize data science models | [10-industrialize-data-science-models.md](10-industrialize-data-science-models.md) |
 
-**Prerequisites:** The demo bucket, dataset, demo data, and artifacts must exist (e.g. created by your project’s deployment process). Use case docs may be uploaded to the demo GCS bucket as part of that deployment.
-
-**No-code / AI for BI analysts:** Each use case doc includes a section **No-code / AI alternatives (BI analysts and non-developers)** that explains how to get similar results using BigQuery Studio’s no-code and AI features (Data canvas, Gemini, data preparations, pipelines, Console UI) without the CLI or SQL/Dataform.
+**Prerequisites:** Run `bqdemo deploy infra` then `bqdemo deploy demos` so the demo bucket, dataset, demo data, and artifacts exist. Use case docs are uploaded to the demo GCS bucket when you run `bqdemo deploy demos` (with default upload).

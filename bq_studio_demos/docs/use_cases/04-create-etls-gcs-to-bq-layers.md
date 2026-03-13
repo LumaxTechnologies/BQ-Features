@@ -44,14 +44,6 @@ Analysts and engineers need repeatable pipelines that land raw files, clean and 
 - Reusable ETL logic in Dataform and/or data preparations.
 - Foundation for adding stored procedures (use case 5), versioning (6), scheduling (7), and monitoring (8).
 
-## No-code / AI alternatives (BI analysts and non-developers)
-
-- **Data preparations:** In **BigQuery Studio** → **Explorer** → **Data preparations**, create a new data preparation. Set the **source** to a table (e.g. one loaded from GCS via Create table) or an external table. Use the **data view** and **suggestion cards** from Gemini to add steps: parse dates, trim text, filter rows, deduplicate, or add computed columns. Set a **destination** table (e.g. in a staging or refined dataset). Run manually or schedule the data preparation. No SQLX or Dataform required for single-table or simple multi-step flows.
-- **Pipelines:** Use **Create new** → **Pipeline** to chain multiple tasks (e.g. “run data preparation A”, then “run SQL or data preparation B”). Add tasks and set the order in the UI. Optionally set a schedule so the pipeline runs daily or weekly. The **Data Engineering Agent** can suggest or generate pipeline steps from natural language (e.g. “Load from GCS, clean, then aggregate by date”).
-- **Layer-by-layer:** Create one data preparation per layer (e.g. raw → staging, staging → refined). Each preparation has one source and one destination; chain them by using the output table of one as the source of the next, or use a pipeline that runs them in sequence.
-
-For BI analysts, data preparations plus pipelines cover most ETL needs without writing SQLX or using Dataform repos.
-
 ## Next
 
 - **Use case 5:** Include stored procedures in these ETLs (e.g. validation or complex logic).

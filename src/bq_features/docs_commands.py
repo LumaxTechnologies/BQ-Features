@@ -60,12 +60,16 @@ def inject_project_id(
 
 
 def export_docs_to_docx(source_dir: Path, output_dir: Path) -> list[Path]:
-    """Mirror source_dir to output_dir, converting each .md file to .docx via pandoc.
+    """Export doc/ to doc_export/ mirroring structure: one .docx per .md file.
+
+    Recursively finds every .md under source_dir and converts it to .docx under output_dir
+    with the same relative path (e.g. doc/features/1-studio/foo.md → doc_export/features/1-studio/foo.docx).
 
     Requires pandoc on PATH. Returns the list of created .docx paths.
     """
     source_dir = source_dir.resolve()
     output_dir = output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
     created: list[Path] = []
 
     try:
@@ -80,28 +84,39 @@ def export_docs_to_docx(source_dir: Path, output_dir: Path) -> list[Path]:
             "brew install pandoc, or https://pandoc.org/installing.html), then run again."
         ) from e
 
-    for path in sorted(source_dir.rglob("*.md")):
-        rel = path.relative_to(source_dir)
-        docx_path = output_dir / rel.with_suffix(".docx")
+    def run_pandoc(md_path: Path, docx_path: Path, timeout: int = 60) -> None:
+        md_path = md_path.resolve()
+        docx_path = docx_path.resolve()
         docx_path.parent.mkdir(parents=True, exist_ok=True)
-        result = subprocess.run(
-            [
-                "pandoc",
-                "-f",
-                "markdown",
-                "-t",
-                "docx",
-                "-o",
-                str(docx_path),
-                str(path),
-            ],
-            capture_output=True,
-            text=True,
-        )
+        cmd = [
+            "pandoc",
+            "-f", "markdown",
+            "-t", "docx",
+            "-o", str(docx_path),
+            str(md_path),
+        ]
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                stdin=subprocess.DEVNULL,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(
+                f"pandoc timed out after {timeout}s converting {md_path}"
+            ) from e
         if result.returncode != 0:
             raise RuntimeError(
-                f"pandoc failed for {path}: {result.stderr or result.stdout}"
+                f"pandoc failed for {md_path}: {result.stderr or result.stdout}"
             )
+
+    for md_path in sorted(source_dir.rglob("*.md")):
+        rel = md_path.relative_to(source_dir)
+        docx_path = output_dir / rel.with_suffix(".docx")
+        print(f"  {rel} → {docx_path.relative_to(output_dir)}")
+        run_pandoc(md_path, docx_path)
         created.append(docx_path)
 
     return created

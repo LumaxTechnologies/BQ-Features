@@ -26,7 +26,7 @@ The CLI generates **Dataform operations** in `bq_studio_demos/dataform/definitio
    Create a release config and a workflow configuration that runs these operations on a schedule (e.g. daily). Trigger a run and check execution logs.
 
 5. **Link to GitHub**  
-   Connect the Dataform repo to GitHub (see `doc/create-bq-repo-and-link-github.md`). Push the demo operations so they’re versioned and reviewable.
+   Connect the Dataform repo to GitHub (see [repositories.md](../../features/1-studio/repositories.md), section “Create a repository and link to GitHub”, for HTTPS/SSH and Secret Manager; the same pattern applies to Dataform repos). Push the demo operations so they’re versioned and reviewable.
 
 ## Demo data used
 

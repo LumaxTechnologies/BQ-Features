@@ -6,7 +6,7 @@
 
 ## Demo doc
 
-For the BQ-Features demo, data is loaded once via `bqdemo deploy infra` (CSVs into the demo dataset and GCS). You can add a **transfer config** that periodically loads from the demo GCS bucket into BigQuery to simulate recurring ingestion.
+For the BQ-Features demo, data is loaded into the demo dataset and GCS (e.g. CSVs under `demo_data/`). You can add a **transfer config** that periodically loads from the demo GCS bucket into BigQuery to simulate recurring ingestion.
 
 ## Demo material
 
@@ -26,7 +26,7 @@ For the BQ-Features demo, data is loaded once via `bqdemo deploy infra` (CSVs in
    Create a transfer that copies `bq_studio_demo` to another dataset (e.g. for backup or a dev copy). Useful to show dataset copy as a transfer type.
 
 4. **Scheduled query**  
-   The CLI creates a scheduled query via the same Data Transfer API (`bqdemo deploy demos --with-schedulers`). In **Pipelines and integration** → **Scheduled queries**, find the config that refreshes `daily_pnl_summary` from `pnl_daily`. Inspect schedule and run history.
+   A scheduled query can be created via the Data Transfer API. In **Pipelines and integration** → **Scheduled queries**, find or create a config that refreshes `daily_pnl_summary` from `pnl_daily`. Inspect schedule and run history.
 
 ## Demo data used
 

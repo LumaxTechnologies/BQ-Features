@@ -400,6 +400,6 @@ These SQLX **operations** run against the demo dataset `{project_id}.{dataset_id
 
 ## Prerequisites
 
-- Demo data must be loaded: run `bqdemo deploy infra --with-demo-data` so `portfolio_holdings`, `daily_prices`, and `pnl_daily` exist.
+- Demo data must be loaded: run `bqdemo deploy demos` so `portfolio_holdings`, `daily_prices`, and `pnl_daily` exist.
 """
     )

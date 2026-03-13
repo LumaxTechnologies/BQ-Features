@@ -56,14 +56,6 @@ Analysts and data scientists need to build models (e.g. returns prediction, risk
 - A notebook or saved queries that reproduce the training and prediction steps.
 - A clear path to scheduling retraining and batch prediction (use case 10).
 
-## No-code / AI alternatives (BI analysts and non-developers)
-
-- **Gemini to generate BigQuery ML:** In the **query editor**, use **Gemini** and describe what you want in natural language, e.g. “Train a linear regression model to predict daily_return from prev_close and close using the table prices_ml_input, and name the model model_returns.” Gemini can generate the `CREATE MODEL` and subsequent `ML.EVALUATE` / `ML.PREDICT` statements; you run them with one click. No need to memorize BigQuery ML syntax.
-- **Data canvas for exploration and model steps:** In a **Data canvas**, use a **SQL** node with a Gemini prompt to build the training dataset (e.g. “From daily_prices compute daily returns and lagged close”). Add another SQL node: “Train a linear regression model on this data to predict daily return.” You can then add a **Visualization** node to plot evaluation metrics or predictions. The flow is visual and prompt-based.
-- **Notebooks with natural language:** In a **notebook**, use the built-in assist (e.g. Gemini) to generate cells that load data, create a training table, run `CREATE MODEL`, and call `ML.PREDICT`. Run cells step by step; save and share the notebook. For custom Python (e.g. scikit-learn), you can still ask the assist to draft the code and run it in the notebook.
-
-Non-developers can train and evaluate models using BigQuery ML with minimal or no SQL, by relying on Gemini and the data canvas to generate and run the statements.
-
 ## Next
 
 - **Use case 10:** Convert this model into an industrialized process (scheduled retrain, scheduled prediction, or API).

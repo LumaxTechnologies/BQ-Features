@@ -10,7 +10,7 @@ Financial pipelines often run daily or intraday. BigQuery offers scheduled queri
 
 ## Demo resources
 
-- **Scheduled query:** A scheduled query can refresh `daily_pnl_summary` from `pnl_daily` (e.g. daily at 06:00). Create one in **Pipelines and integration** → **Scheduled queries**, or use your project’s deployment to create it. Visible under **Pipelines and integration** → Scheduled queries.
+- **Scheduled query (CLI):** `bqdemo deploy demos --with-schedulers` creates a scheduled query that refreshes `daily_pnl_summary` from `pnl_daily` (e.g. daily at 06:00). Visible under **Pipelines and integration** → Scheduled queries.
 - **Dataform:** Schedule a **workflow** that runs your release config (all or selected operations). [dataform.md](../features/2-pipelines-integration/dataform.md), [scheduled-queries.md](../features/2-pipelines-integration/scheduled-queries.md).
 - **Stored procedures:** Scheduled queries cannot `CALL` procedures; use Dataform operations that call procedures and schedule the Dataform workflow. [doc/use_cases/05-include-stored-procedures-in-etls.md](05-include-stored-procedures-in-etls.md).
 
@@ -18,7 +18,13 @@ Financial pipelines often run daily or intraday. BigQuery offers scheduled queri
 
 ### 1. Schedule a single query (demo)
 
-Create a scheduled query that runs the `daily_pnl_summary` refresh (e.g. a query that inserts or replaces from `pnl_daily` into `daily_pnl_summary`). In **BigQuery** → **Pipelines and integration** → **Scheduled queries** (or **Data transfers**), create a new scheduled query, set the SQL and destination, and choose the schedule (e.g. daily at 06:00). Find the config to check the schedule and last run.
+If you haven’t already:
+
+```bash
+bqdemo deploy demos --with-schedulers
+```
+
+This creates a transfer config that runs the `daily_pnl_summary` refresh query on a schedule. In the console: **BigQuery** → **Pipelines and integration** → **Scheduled queries** (or **Data transfers**). Find the config, check the schedule and last run.
 
 ### 2. Schedule a Dataform workflow
 
@@ -38,14 +44,6 @@ You can also create a **pipeline** in BigQuery Studio (Create new → Pipeline) 
 
 - At least one scheduled query (demo daily refresh) and optionally a Dataform workflow on a schedule.
 - ETLs (and procedures invoked via Dataform) running without manual execution.
-
-## No-code / AI alternatives (BI analysts and non-developers)
-
-- **Schedule a data preparation:** Open your **data preparation** in BigQuery Studio → use **Schedule** (or **More** → **Schedule**). Set the frequency (e.g. daily, weekly) and time; the preparation will run and refresh the destination table without manual runs. No Dataform or transfer config setup required.
-- **Schedule a saved query:** For a single query that refreshes a table, **Save** the query, then go to **Pipelines and integration** → **Scheduled queries** (or find **Schedule** on the saved query). Create a new scheduled query from that saved query and set the schedule in the UI.
-- **Schedule a pipeline:** If you use a **Pipeline** (Create new → Pipeline) that chains data preparations and/or SQL tasks, use the pipeline’s **Schedule** option to run it on a cadence (e.g. daily at 06:00). All tasks in the pipeline run in order. No Dataform workflow or CLI needed.
-
-BI analysts can schedule their data preparations and pipelines entirely from the BigQuery Studio and Cloud Console UIs.
 
 ## Next
 

@@ -6,7 +6,7 @@
 
 ## Demo doc
 
-The CLI creates one scheduled query when you run `bqdemo deploy demos --with-schedulers`: it refreshes `daily_pnl_summary` from `pnl_daily` on a daily schedule. Use it as the reference for creating more scheduled queries against the demo dataset.
+A scheduled query can be set up to refresh `daily_pnl_summary` from `pnl_daily` on a daily schedule. Use it as the reference for creating more scheduled queries against the demo dataset (**Pipelines and integration** → **Scheduled queries**).
 
 ## Demo material
 

@@ -58,14 +58,6 @@ Models built in use case 9 need to run in production: periodic retraining on fre
 - A scheduled retraining and (optionally) batch prediction pipeline.
 - Models and predictions updated automatically from the same ETL and monitoring stack as the rest of the financial pipeline.
 
-## No-code / AI alternatives (BI analysts and non-developers)
-
-- **Schedule retraining and prediction from the UI:** Save the query that runs `CREATE OR REPLACE MODEL ...` (retrain) or `INSERT ... SELECT * FROM ML.PREDICT(...)` (batch prediction) as a **saved query**. Then create a **scheduled query** (Pipelines and integration → Scheduled queries) that runs that saved query on a cadence (e.g. weekly for retrain, daily for prediction). Set the schedule and destination in the UI; no Dataform or CLI required.
-- **Use a pipeline:** If retrain and prediction are separate steps (e.g. “run query A to refresh training data”, “run query B to retrain”, “run query C to write predictions”), create a **Pipeline** that runs these as tasks in order. Schedule the pipeline (e.g. weekly for full retrain + daily prediction). All configuration is in the BigQuery Studio UI.
-- **Monitor like any other ETL:** Use the **Jobs** explorer and **Cloud Monitoring** (use case 8) to confirm model and prediction jobs succeed. Set up alerting on failure via Monitoring. No code needed for monitoring and alerts.
-
-BI analysts can industrialize models by scheduling saved queries or pipeline tasks and monitoring them through the same Console and Monitoring UIs used for other ETLs.
-
 ## Next
 
 - Revisit use cases 6–8 to ensure the model pipeline is versioned, shared, scheduled, and monitored like the rest of your ETLs.

@@ -10,7 +10,7 @@ Analysts need to understand content, quality, and relationships before building 
 
 ## Demo resources
 
-- **Dataset:** `bq_studio_demo` with tables `portfolio_holdings`, `daily_prices`, `pnl_daily`, `transactions` (populated by the demo deployment).
+- **Dataset:** `bq_studio_demo` with tables `portfolio_holdings`, `daily_prices`, `pnl_daily`, `transactions` (from `bqdemo deploy demos`).
 - **SQL scripts:** `bq_studio_demos/sql/` (e.g. `01_portfolio_value.sql`, `02_returns_and_volatility.sql`, `03_pnl_by_strategy.sql`) — run in the query editor or upload as saved queries.
 - **Notebook:** `bq_studio_demos/notebooks/finance_analytics_demo.ipynb` — load tables, compute returns, plot PnL.
 - **Docs:** `bq_studio_demos/docs/gemini-in-bigquery-studio.md` for enabling and using Gemini.
@@ -43,23 +43,13 @@ Save each as a **saved query** (Save button, name, region). They will appear und
 
 ### 5. Use the finance notebook
 
-- Upload and open `bq_studio_demos/notebooks/finance_analytics_demo.ipynb` (e.g. via **Explorer** → **Notebooks** → **Upload to Notebooks**). Set the project and dataset in the first cells, then run: load tables → time series and returns → PnL bar chart. See [notebooks.md](../features/1-studio/notebooks.md).
+- Upload and open `bq_studio_demos/notebooks/finance_analytics_demo.ipynb` (or use `bqdemo upload-to-studio`). Set the project and dataset in the first cells, then run: load tables → time series and returns → PnL bar chart. See [notebooks.md](../features/1-studio/notebooks.md).
 
 ## What you get
 
 - Familiarity with the demo schema and content.
 - Saved queries and/or a notebook for reuse.
 - Experience with Gemini and the data canvas for exploration.
-
-## No-code / AI alternatives (BI analysts and non-developers)
-
-This use case is already well suited to no-code and AI-assisted workflows:
-
-- **Data canvas (no SQL required):** Use **Create new** → **Data canvas**. Add a **Search** node and describe the data you need in natural language (e.g. “portfolio holdings and daily prices”). Add a **SQL** node and type what you want in plain language (e.g. “Join them and show market value by date”). Add a **Visualization** node and describe the chart (e.g. “Line chart of market value over time”). You never have to write SQL; Gemini generates it from your prompts.
-- **Gemini in the query editor:** If you prefer a single query view, open the **SQL query** editor and use the **Gemini** assist. Ask “List tables in bq_studio_demo” or “Daily returns by symbol from daily_prices” and run the generated SQL. Iterate by asking for filters, rounding, or new columns. Ideal for BI analysts who want to explore without learning GoogleSQL.
-- **Saved queries and notebooks:** Once you have a result you like, **Save** it as a saved query or in a notebook. Share it via the repo (Code Viewer / Code Editor) so teammates can run or adapt it. No Git or CLI needed for basic sharing.
-
-For non-developers, the data canvas plus Gemini covers most exploration and ad-hoc reporting; use saved queries when you need to reuse the same analysis.
 
 ## Next
 

@@ -120,14 +120,6 @@ For **Studio** repos (saved queries, notebooks, data prep), see [repositories.md
 - Shared access via IAM; collaboration and review via Git.
 - Clear path to scheduling (use case 7) and monitoring (use case 8) the same ETLs.
 
-## No-code / AI alternatives (BI analysts and non-developers)
-
-- **Sharing (no Git required):** In **BigQuery Studio**, open a **saved query**, **notebook**, or **data preparation** → **Share**. Add users or groups and choose **Code Viewer** (run and view) or **Code Editor** (edit and run). Teammates see the asset in Explorer. For **repositories**, use the repo’s **Share** action and grant Code Viewer or Code Editor so others can open and run queries, notebooks, or data preparations in that repo. No Git or CLI.
-- **Version history:** Saved queries, notebooks, and data preparations in a repo have **Version history** in the UI. Open the asset → **Version history** (or equivalent) to see past versions, compare, or restore. You don’t need to use Git directly; the Studio UI shows the history and lets you revert.
-- **Collaboration:** Use the same repo and workspace as your team. Edit and save; changes are tracked. If the repo is linked to GitHub, an admin or developer can handle branches and pull requests; as a BI analyst you can focus on editing and sharing in the Studio UI.
-
-For non-developers, sharing and version history via the Studio UI is enough for most collaboration; Git linking remains optional and can be managed by admins.
-
 ## Next
 
 - **Use case 7:** Schedule the ETLs (Dataform workflow config or scheduled query).

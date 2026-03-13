@@ -6,7 +6,7 @@
 
 ## Demo doc
 
-Build a simple pipeline that runs a demo SQL script (e.g. refresh daily PnL summary) or a data preparation based on the demo dataset. This complements the single scheduled query created by `bqdemo deploy demos --with-schedulers`.
+Build a simple pipeline that runs a demo SQL script (e.g. refresh daily PnL summary) or a data preparation based on the demo dataset. This complements a scheduled query that refreshes `daily_pnl_summary` from `pnl_daily`.
 
 ## Demo material
 

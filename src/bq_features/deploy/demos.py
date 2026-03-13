@@ -1,4 +1,4 @@
-"""Deploy BQ Studio demo material: notebooks, SQL, docs, schedulers, Looker."""
+"""Deploy BQ Studio demo material: notebooks, SQL, docs, demo data, schedulers, Looker."""
 
 from __future__ import annotations
 
@@ -6,9 +6,11 @@ import shutil
 from pathlib import Path
 
 import click
+from google.auth.exceptions import DefaultCredentialsError
 
 from bq_features.deploy import gcp
 from bq_features.deploy import templates
+from bq_features.deploy.demo_data import get_bundled_demo_data_dir, write_bundled_demo_data
 
 
 def run_deploy_demos(
@@ -18,12 +20,14 @@ def run_deploy_demos(
     with_schedulers: bool,
     with_looker: bool,
     upload_to_gcs: bool,
+    with_demo_data: bool,
+    csv_dir: Path | None,
     dataset_prefix: str,
     bucket_prefix: str,
     dry_run: bool,
     config: dict,
 ) -> None:
-    """Generate and upload demo SQL, notebooks, and docs to GCS."""
+    """Generate and upload demo SQL, notebooks, docs; optionally load demo data into BQ and GCS."""
     dataset_id = dataset_prefix
     bucket_name = f"{bucket_prefix}-{project_id}".replace("_", "-").lower()
 
@@ -31,6 +35,8 @@ def run_deploy_demos(
         click.echo("[DRY RUN] Would write to:")
         click.echo(f"  {output_dir.absolute()}")
         click.echo("  - SQL scripts, notebooks, docs, Dataform operations (dataform/definitions/operations/)")
+        if with_demo_data or csv_dir:
+            click.echo("  - Load demo/CSV data into BigQuery and upload to GCS (demo_data/)")
         if with_schedulers:
             click.echo("  - Create scheduled queries in project")
         if with_looker:
@@ -56,6 +62,10 @@ def run_deploy_demos(
     # Copy use-case docs from repo doc/use_cases/ so they are uploaded to GCS with other docs
     _copy_use_cases_docs(output_dir)
 
+    # Load demo data into BigQuery and GCS (deploy demos is the single command for demo data)
+    if with_demo_data or csv_dir:
+        _load_demo_data(project_id, dataset_id, bucket_name, with_demo_data, csv_dir)
+
     if with_schedulers:
         _create_schedulers(project_id, region, dataset_id, config)
 
@@ -68,6 +78,39 @@ def run_deploy_demos(
     if upload_to_gcs:
         click.echo(f"  GCS bucket: gs://{bucket_name}/ (sql/, notebooks/, docs/, docs/use_cases/, dataform/)")
     click.echo("  To use the SQL in BigQuery Studio: Queries → View actions → Upload SQL query → select files from bq_studio_demos/sql/")
+
+
+def _load_demo_data(
+    project_id: str,
+    dataset_id: str,
+    bucket_name: str,
+    with_demo_data: bool,
+    csv_dir: Path | None,
+) -> None:
+    """Load CSV data into BigQuery and upload to GCS (bundled demo or custom --csv-dir)."""
+    data_dir = csv_dir
+    if with_demo_data and not csv_dir:
+        data_dir = get_bundled_demo_data_dir()
+        if not data_dir or not data_dir.is_dir():
+            demo_root = Path(__file__).resolve().parent.parent.parent.parent / "demo_data"
+            demo_root.mkdir(parents=True, exist_ok=True)
+            write_bundled_demo_data(demo_root)
+            data_dir = demo_root
+
+    if not data_dir or not data_dir.is_dir():
+        return
+
+    try:
+        client_bq = gcp.get_bigquery_client(project_id)
+        client_gcs = gcp.get_storage_client(project_id)
+    except DefaultCredentialsError:
+        click.echo("Google Cloud credentials not found; skipping demo data load.", err=True)
+        click.echo("  Run: gcloud auth application-default login", err=True)
+        return
+
+    click.echo("Loading demo data into BigQuery and uploading to GCS...")
+    gcp.load_csv_dir_to_bq(client_bq, project_id, dataset_id, data_dir)
+    gcp.upload_csv_dir_to_gcs(client_gcs, bucket_name, data_dir)
 
 
 def _copy_use_cases_docs(output_dir: Path) -> None:

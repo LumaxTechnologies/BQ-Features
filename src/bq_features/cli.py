@@ -68,7 +68,7 @@ def examples() -> None:
     click.echo("  bqdemo deploy demos --no-schedulers --no-looker")
     click.echo("")
     click.echo("# Full demo with scheduled queries and Looker")
-    click.echo("  bqdemo deploy infra --with-demo-data")
+    click.echo("  bqdemo deploy infra")
     click.echo("  bqdemo deploy demos --with-schedulers --with-looker")
     click.echo("")
     click.echo("# Custom region and prefixes")
@@ -76,8 +76,8 @@ def examples() -> None:
     click.echo("  bqdemo deploy demos --dataset-prefix my_demo --bucket-prefix my-bq-demo")
     click.echo("")
     click.echo("# Your own CSV data (table name = filename without .csv)")
-    click.echo("  bqdemo deploy infra --csv-dir /path/to/csv/files --no-demo-data")
-    click.echo("  bqdemo deploy demos")
+    click.echo("  bqdemo deploy infra")
+    click.echo("  bqdemo deploy demos --csv-dir /path/to/csv/files --no-demo-data")
     click.echo("")
     click.echo("# Generate demos locally only (no GCS upload)")
     click.echo("  bqdemo deploy demos --no-upload-to-gcs -o ./my_demos")
@@ -102,18 +102,6 @@ def deploy(ctx: click.Context) -> None:
     help="BigQuery dataset region (e.g. US, EU).",
 )
 @click.option(
-    "--with-demo-data/--no-demo-data",
-    "with_demo_data",
-    default=True,
-    help="Create and load bundled finance demo data into BQ and GCS.",
-)
-@click.option(
-    "--csv-dir",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Directory of CSV files to load (table name = filename without .csv). Overrides bundled demo data if set.",
-)
-@click.option(
     "--bucket-prefix",
     default="bq-studio-demo",
     help="Prefix for GCS bucket name (full name: {prefix}-{project_id}).",
@@ -133,13 +121,11 @@ def deploy_infra(
     ctx: click.Context,
     project_id: str | None,
     region: str,
-    with_demo_data: bool,
-    csv_dir: Path | None,
     bucket_prefix: str,
     dataset_prefix: str,
     dry_run: bool,
 ) -> None:
-    """Deploy BigQuery datasets, GCS buckets, and optionally load demo or custom CSV data."""
+    """Deploy BigQuery datasets and GCS bucket only. Load demo data with 'bqdemo deploy demos'."""
     from bq_features.deploy.infra import run_deploy_infra
 
     config = ctx.obj["config"]
@@ -152,8 +138,6 @@ def deploy_infra(
     run_deploy_infra(
         project_id=pid,
         region=region,
-        with_demo_data=with_demo_data,
-        csv_dir=csv_dir,
         bucket_prefix=bucket_prefix,
         dataset_prefix=dataset_prefix,
         dry_run=dry_run,
@@ -198,6 +182,18 @@ def deploy_infra(
     help="Upload SQL, notebooks, and docs to the demo GCS bucket (default: on, or demos.upload_to_gcs in config).",
 )
 @click.option(
+    "--with-demo-data/--no-demo-data",
+    "with_demo_data",
+    default=True,
+    help="Load bundled finance demo data into BigQuery and GCS (demo_data/).",
+)
+@click.option(
+    "--csv-dir",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Directory of CSV files to load instead of bundled demo (table name = filename without .csv).",
+)
+@click.option(
     "--dataset-prefix",
     default="bq_studio_demo",
     help="BigQuery dataset prefix (must match infra).",
@@ -221,11 +217,13 @@ def deploy_demos(
     with_schedulers: bool,
     with_looker: bool,
     upload_to_gcs: bool,
+    with_demo_data: bool,
+    csv_dir: Path | None,
     dataset_prefix: str,
     bucket_prefix: str,
     dry_run: bool,
 ) -> None:
-    """Deploy BQ Studio demo material: notebooks, SQL, docs, optional Looker and schedulers."""
+    """Deploy BQ Studio demo material: notebooks, SQL, docs, demo data (BQ + GCS), optional Looker and schedulers."""
     from bq_features.deploy.demos import run_deploy_demos
 
     config = ctx.obj["config"]
@@ -245,6 +243,8 @@ def deploy_demos(
         with_schedulers=with_schedulers,
         with_looker=with_looker,
         upload_to_gcs=upload_to_gcs,
+        with_demo_data=with_demo_data,
+        csv_dir=csv_dir,
         dataset_prefix=dataset_prefix,
         bucket_prefix=bucket_prefix,
         dry_run=dry_run,
@@ -447,10 +447,11 @@ def docs_inject_project_id(
     help="Output folder for .docx files, mirroring source structure (default: doc_export/).",
 )
 def docs_export_docx(source_dir: Path, output_dir: Path) -> None:
-    """Export doc/ to doc_export/ as .docx, mirroring structure (ready for SharePoint).
+    """Export doc/ to doc_export/ as .docx, mirroring structure (one .docx per .md).
 
-    Converts each .md file to .docx using pandoc. Requires pandoc to be installed
-    (e.g. apt install pandoc, brew install pandoc, or https://pandoc.org/installing.html).
+    Every .md under the source folder is converted to .docx under the output folder with the same
+    relative path (e.g. doc/features/1-studio/foo.md → doc_export/features/1-studio/foo.docx).
+    Requires pandoc (apt install pandoc, brew install pandoc, or https://pandoc.org/installing.html).
     """
     from bq_features.docs_commands import export_docs_to_docx
 
@@ -459,6 +460,7 @@ def docs_export_docx(source_dir: Path, output_dir: Path) -> None:
         raise click.ClickException(f"Source directory not found: {source_dir}")
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+    click.echo("Exporting .md → .docx (mirroring folder structure).")
     try:
         created = export_docs_to_docx(source_dir=source_dir, output_dir=output_dir)
     except RuntimeError as e:

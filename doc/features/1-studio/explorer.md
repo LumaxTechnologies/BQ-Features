@@ -6,7 +6,7 @@ The **Explorer** in BigQuery Studio is the left pane where you browse and manage
 
 ## Demo doc
 
-Use Explorer to discover the demo dataset and its tables after `bqdemo deploy infra --with-demo-data` and `bqdemo deploy demos`. All demo material assumes dataset `bq_studio_demo` (or your `dataset_prefix`) with tables: `portfolio_holdings`, `daily_prices`, `pnl_daily`, `transactions`.
+Use Explorer to discover the demo dataset and its tables. All demo material assumes dataset `bq_studio_demo` (or your project’s dataset prefix) with tables: `portfolio_holdings`, `daily_prices`, `pnl_daily`, `transactions`.
 
 ## Demo material
 

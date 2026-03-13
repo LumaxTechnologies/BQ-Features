@@ -6,16 +6,6 @@ CLI to deploy **BigQuery datasets**, **GCS buckets**, and **BigQuery Studio**–
   - [What gets deployed](#what-gets-deployed)
     - [1. Infrastructure (`deploy infra`)](#1-infrastructure-deploy-infra)
     - [2. Demo material (`deploy demos`)](#2-demo-material-deploy-demos)
-  - [BigQuery concepts: data canvas, data preparations, pipelines](#bigquery-concepts-data-canvas-data-preparations-pipelines)
-    - [Data canvas](#data-canvas)
-  - [Data preparations](#data-preparations)
-  - [Pipelines](#pipelines)
-  - [Repositories](#repositories)
-  - [Untitled vs shared resources (queries, notebooks)](#untitled-vs-shared-resources-queries-notebooks)
-  - [Example contents (data canvas, data preparations, pipelines)](#example-contents-data-canvas-data-preparations-pipelines)
-      - [Data canvas – example prompts and flow](#data-canvas--example-prompts-and-flow)
-      - [Data preparations – example steps and outcome](#data-preparations--example-steps-and-outcome)
-      - [Pipelines – example task DAG](#pipelines--example-task-dag)
   - [Prerequisites](#prerequisites)
   - [Authenticate with Google Cloud (do this first)](#authenticate-with-google-cloud-do-this-first)
     - [Why authenticate the gcloud CLI?](#why-authenticate-the-gcloud-cli)
@@ -25,12 +15,12 @@ CLI to deploy **BigQuery datasets**, **GCS buckets**, and **BigQuery Studio**–
   - [Configuration](#configuration)
     - [Getting the Google Cloud project ID](#getting-the-google-cloud-project-id)
   - [Usage](#usage)
-    - [Deploy infrastructure (datasets, bucket, demo data)](#deploy-infrastructure-datasets-bucket-demo-data)
+    - [Deploy infrastructure (datasets, bucket)](#deploy-infrastructure-datasets-bucket)
     - [Deploy demo material (notebooks, SQL, docs, optional schedulers/Looker)](#deploy-demo-material-notebooks-sql-docs-optional-schedulerslooker)
-  - [Using BigQuery Studio](#using-bigquery-studio)
+    - [Using BigQuery Studio](#using-bigquery-studio)
     - [Using embedded GCP LLM (Gemini) in BigQuery Studio](#using-embedded-gcp-llm-gemini-in-bigquery-studio)
-  - [Documentation helpers](#documentation-helpers)
-  - [CLI examples](#cli-examples)
+    - [CLI examples](#cli-examples)
+    - [Documentation helpers](#documentation-helpers)
   - [Project layout after deploy](#project-layout-after-deploy)
   - [Options reference](#options-reference)
   - [License](#license)
@@ -42,10 +32,11 @@ CLI to deploy **BigQuery datasets**, **GCS buckets**, and **BigQuery Studio**–
 
 - **BigQuery datasets**: main demo dataset and a staging dataset (e.g. `bq_studio_demo`, `bq_studio_demo_staging`).
 - **GCS bucket**: one bucket for demo data and notebooks (e.g. `bq-studio-demo-<project_id>`).
-- **Demo data** (optional): load bundled finance CSVs into BigQuery and upload the same files to GCS, or point to your own CSV directory.
+- **No demo data**: infra only creates empty datasets and bucket.
 
 ### 2. Demo material (`deploy demos`)
 
+- **Demo data**: load bundled finance CSVs into BigQuery and upload to GCS (`demo_data/`), or use `--csv-dir` for your own CSVs. Omit with `--no-demo-data`.
 - **SQL scripts**: runnable in BigQuery Studio (portfolio value, returns/volatility, PnL by strategy, load-from-GCS example).
 - **Dataform operations**: SQLX operations that run against the demo data and materialize tables (`daily_pnl_summary`, `portfolio_value_snapshot`, `returns_volatility`). Copy into a Dataform repo to run or schedule.
 - **Jupyter notebook**: finance analytics (load from BQ, time series, PnL charts); suitable for Vertex AI Workbench or Colab Enterprise.
@@ -56,122 +47,6 @@ CLI to deploy **BigQuery datasets**, **GCS buckets**, and **BigQuery Studio**–
   - **Scheduled transformation tasks**: create a scheduled query that refreshes a summary table (e.g. daily PnL).
   - **Looker**: instructions and optional LookML snippet to connect Looker to the demo dataset and build dashboards.
   - **Upload notebooks to GCS**: for use in Vertex AI Workbench or Colab Enterprise.
-
-## BigQuery concepts: data canvas, data preparations, pipelines
-
-This section explains three BigQuery Studio concepts that the CLI’s demo material is designed to work with.
-
-### Data canvas
-
-**Data canvas** is an AI-powered analytics experience in BigQuery Studio (a [Gemini in BigQuery](https://docs.cloud.google.com/bigquery/docs/gemini-overview) feature). It lets you **find**, **transform**, **query**, and **visualize** data using natural language and a graphical workflow instead of writing SQL by hand.
-
-- **Find data**: Use natural language or keyword search against [Dataplex Universal Catalog](https://docs.cloud.google.com/dataplex/docs/introduction) to discover tables, views, and materialized views.
-- **Generate SQL**: Describe what you want in plain language; Gemini generates SQL (joins, filters, aggregations, etc.).
-- **Visualize**: Request charts (bar, line, pie, scatter, heat map) from your result sets.
-- **Workflow**: The canvas is a **DAG** (directed acyclic graph) of nodes: **Search** → **Table** → **SQL** → **Visualization** / **Insights** / **Destination**. You can branch, iterate, and save results to tables.
-
-Data canvas is aimed at analysts and engineers who want to go from data to insights quickly; it is not meant for non-technical business users. The SQL scripts and demo tables deployed by this CLI are intended to be used in the query editor and in data canvas (e.g. “Show me portfolio value over time” against the demo dataset).
-
-### Data preparations
-
-**Data preparations** are BigQuery resources (powered by [Dataform](https://docs.cloud.google.com/dataform/docs/overview)) that implement **cleaning, transforming, and enriching** steps on your data. They are the building blocks for repeatable ETL-style workflows inside BigQuery.
-
-- **AI-assisted**: Gemini suggests transformations (e.g. parsing dates, trimming strings, mapping schemas) based on a sample of your table. You apply, edit, or add steps in a **data view** and **graph view**.
-- **Steps**: Typical steps include **Source** (BigQuery table), **Transformation** (SQL expressions), **Filter**, **Deduplicate**, **Validation**, **Join**, and **Destination** (output table).
-- **Write modes**: You can run a data preparation in **full refresh**, **append**, **incremental**, or **upsert** mode to control how the destination table is updated.
-- **Scheduling**: Data preparations can be run manually or on a schedule (via BigQuery scheduling / Dataform). The CLI’s optional “scheduled transformation tasks” create scheduled queries that refresh summary tables—conceptually similar to a single-step data preparation.
-
-Data preparations are stored as **SQLX** assets and can live in a repository (for versioning) or standalone. They appear under **Explorer → Data preparations** in the BigQuery console.
-
-### Pipelines
-
-In BigQuery, **pipelines** are **orchestrated workflows** that run one or more tasks (e.g. SQL, data preparations, notebooks) in a defined order and optionally on a schedule.
-
-- **BigQuery pipelines**: You create a pipeline from the BigQuery UI (**Create new → Pipeline**). A pipeline is a DAG of tasks (SQL queries, data preparation runs, notebook runs). The **[Data Engineering Agent](https://docs.cloud.google.com/bigquery/docs/data-engineering-agent-pipelines)** can generate or modify pipeline definitions from natural language; it produces SQLX code in a Dataform repository.
-- **Pipeline vs data preparation**: A **data preparation** is a single ETL “job” (source → transform → destination). A **pipeline** composes multiple such jobs (and other tasks) and runs them in sequence or on a schedule. The CLI’s “scheduled transformation tasks” are one form of scheduled work; a full pipeline could chain several data preparations and SQL scripts.
-
-### Repositories
-
-**Repositories** in BigQuery Studio are Git-based containers for version-controlled code. They back saved queries, notebooks, pipelines, and data preparations that you see under **Explorer → Queries**, **Notebooks**, **Repositories**, etc.
-
-- **What they are**: Each repository is a **Git repository**. BigQuery uses Git to record changes and manage file versions. You work inside **workspaces** (e.g. a default or branch-like workspace) to edit the files in the repo.
-- **What lives in them**: Saved queries, notebooks, and other **code assets** are stored as files in a repository (powered by [Dataform](https://cloud.google.com/dataform/docs/overview)). When you save a query or upload a notebook, it is stored in a project repository (often an implicit/default one) in a chosen **region**.
-- **Optional third-party Git**: A BigQuery repository can be connected to a remote Git repo (GitHub, GitLab, Bitbucket, Azure DevOps) via SSH or HTTPS. Then the code can be synced, pushed, and pulled like any Git repo; BigQuery still uses the Dataform service agent and Secret Manager for credentials.
-- **Where to see them**: In the console, **Explorer → Repositories** lists your repositories. **Queries** and **Notebooks** in the Explorer are views over the same underlying assets (they may live in a default repo you don't manage explicitly).
-- **Pricing and quotas**: Creating/updating/deleting repositories is free; [Dataform quotas](https://cloud.google.com/dataform/docs/quotas#quotas) apply. See [Introduction to repositories](https://cloud.google.com/bigquery/docs/repository-intro) and [Create and manage repositories](https://cloud.google.com/bigquery/docs/repositories).
-
-### Untitled vs shared resources (queries, notebooks)
-
-BigQuery Studio distinguishes between **untitled** (unsaved) and **saved** resources. Only saved resources can be **shared** and versioned.
-
-| Aspect | **Untitled** (unsaved) | **Saved** (then optionally shared) |
-|--------|------------------------|-----------------------------------|
-| **Persistence** | Exists only in your current browser session. Closing the tab or losing the session loses the content unless you save. | Stored as a **code asset** in a repository (Dataform-backed). Survives closing the editor and is tied to the project and region. |
-| **Naming** | Shown as "Untitled" (or "Untitled 1", etc.) in the tab. | Has a name you give when saving (or when uploading). |
-| **Version history** | None. No history, no revert. | **Version history** is available: you can revert to or branch from previous versions; autosave appears as "Your changes" until you save a new version. |
-| **Sharing** | Not shareable. Only you see it in your session. | **Shareable via IAM**: grant other users/groups **Code Viewer**, **Code Editor**, or **Code Owner** on the asset (or on the repository) so they can view, edit, or manage it. |
-| **Visibility in Explorer** | Does not appear under **Queries** or **Notebooks** in the Explorer pane. | Appears under **Explorer → Queries** or **Explorer → Notebooks** (and in **Repositories** if you open the repo). |
-| **Use case** | Quick ad-hoc SQL or notebook; try something without committing. | Reusable, collaborative, and auditable queries or notebooks; link from pipelines; share with the team. |
-
-**Technical takeaway**: "Untitled" means the resource is **not** yet a first-class asset in a repository—it's session state in the UI. **Saving** (or uploading) creates that asset in a repository and unlocks versioning and IAM-based sharing. The same idea applies to queries and notebooks: save (or upload) to make them persistent and shareable.
-
-Together, **data canvas** (ad-hoc analysis and visualization), **data preparations** (reusable transform jobs), and **pipelines** (orchestration) cover the flow from exploration to productionized data workflows in BigQuery Studio.
-
-### Example contents (data canvas, data preparations, pipelines)
-
-The following are **concrete examples of what you create or run inside BigQuery** for each feature—prompts, steps, and pipeline definitions—using the demo dataset (e.g. `bq_studio_demo.portfolio_holdings`, `daily_prices`, `transactions`, `pnl_daily`) after you deploy.
-
----
-
-#### Data canvas – example prompts and flow
-
-In the data canvas you work with **nodes** and **natural language prompts**. Examples:
-
-| Where | Example prompt / action |
-|--------|--------------------------|
-| **Search node** | *“portfolio holdings and daily prices”* or *“tables with symbol and date”* → finds `portfolio_holdings`, `daily_prices` in the catalog. |
-| **SQL node** (from table) | *“Join portfolio_holdings with daily_prices on symbol and date, and compute quantity times close as market_value”* → Gemini generates the JOIN and column expression. |
-| **SQL node** (ad‑hoc) | *“Show total PnL by strategy and date from pnl_daily”* → generates `SELECT date, strategy, SUM(pnl), … GROUP BY date, strategy`. |
-| **Visualization node** | *“Line chart of market value over as_of_date”* or *“Bar chart of total_pnl by strategy”* → creates the chart from the SQL result. |
-| **Insights node** | *“Summarize trends in this result”* → generates a short summary. |
-| **Destination node** | Save the SQL result to a table, e.g. `bq_studio_demo_staging.portfolio_value_snapshot`. |
-
-**Example flow:** Search → add `portfolio_holdings` and `daily_prices` as table nodes → add SQL node with prompt above → add Visualization node → add Destination to persist the result. That is a full data-canvas workflow (find → query → visualize → save).
-
----
-
-#### Data preparations – example steps and outcome
-
-A **data preparation** is a sequence of steps that clean and transform a source table and write to a destination. Example for the demo table `transactions`:
-
-| Step type | Example |
-|-----------|---------|
-| **Source** | `bq_studio_demo.transactions` (columns e.g. `symbol`, `quantity`, `price`, `txn_date`, …). |
-| **Transformation** | Parse `txn_date` as DATE; add computed column `quantity * price AS notional`. |
-| **Filter** | Keep rows where `quantity > 0` (or “Remove rows where quantity is null”). |
-| **Deduplicate** | On keys `(symbol, txn_date, quantity, price)` with optional sort to keep latest. |
-| **Validation** | “Fail if notional &lt; 0” → rows that fail go to an error table or fail the run. |
-| **Destination** | `bq_studio_demo_staging.transactions_cleaned`, write mode **Incremental** on `txn_date` (or Full refresh). |
-
-In the UI you get **suggestion cards** from Gemini (e.g. “Keep rows if quantity is not null”, “Parse txn_date as date”) that you apply or edit. The result is a single data preparation asset (stored as SQLX) you can run manually or on a schedule.
-
----
-
-#### Pipelines – example task DAG
-
-A **pipeline** orchestrates **multiple tasks** in order. Example with the demo dataset:
-
-| Task order | Task type | Example |
-|------------|-----------|---------|
-| 1 | **Data preparation** | Run data preparation “Clean transactions” (e.g. the one above) → writes `transactions_cleaned`. |
-| 2 | **SQL** | Run a query that builds `daily_pnl` from `transactions_cleaned` (e.g. aggregate by date/symbol). |
-| 3 | **Data preparation** | Run data preparation “Enrich PnL with strategy” (join to a strategy lookup, write to `pnl_daily`). |
-
-So the **pipeline** is: *Task 1 → Task 2 → Task 3* (each task is a BigQuery job: a data preparation run or a SQL execution). You define this DAG in **Create new → Pipeline**, add the three tasks, set dependencies, and optionally a schedule. The **Data Engineering Agent** can propose or modify this from prompts like: *“Create a pipeline that cleans transactions, then computes daily PnL, then enriches with strategy and writes to pnl_daily.”*
-
----
-
-These examples use the tables created by `bqdemo deploy infra --with-demo-data` and `bqdemo deploy demos`. Replace dataset/table names with your project/dataset if different.
 
 ## Prerequisites
 
@@ -300,17 +175,11 @@ Alternatively, set `GOOGLE_CLOUD_PROJECT` or pass `--project-id` on each command
 
 ## Usage
 
-### Deploy infrastructure (datasets, bucket, demo data)
+### Deploy infrastructure (datasets, bucket)
 
 ```bash
-# Default: create datasets, bucket, and load bundled finance demo data
+# Create datasets and GCS bucket only (no demo data)
 bqdemo deploy infra
-
-# Without demo data
-bqdemo deploy infra --no-demo-data
-
-# Load your own CSVs (table name = filename without .csv)
-bqdemo deploy infra --csv-dir /path/to/csv/files
 
 # Custom prefixes and region
 bqdemo deploy infra --dataset-prefix my_demo --bucket-prefix my-bq-demo --region EU
@@ -318,6 +187,8 @@ bqdemo deploy infra --dataset-prefix my_demo --bucket-prefix my-bq-demo --region
 # Dry run (no changes)
 bqdemo deploy infra --dry-run
 ```
+
+Demo data is loaded by **`bqdemo deploy demos`** (see below).
 
 ### Deploy demo material (notebooks, SQL, docs, optional schedulers/Looker)
 
@@ -385,13 +256,13 @@ bqdemo deploy demos --no-schedulers --no-looker
 **Full demo with scheduled queries and Looker instructions:**
 
 ```bash
-bqdemo deploy infra --with-demo-data
+bqdemo deploy infra
 bqdemo deploy demos --with-schedulers --with-looker
 ```
 
 **Use demos with data canvas:** After `deploy demos`, open BigQuery Studio and use the data canvas. Point a **Search** or **Table** node at the demo dataset (e.g. `bq_studio_demo`). Try prompts like “portfolio value by date” or “returns and volatility by symbol”; the demo tables (`portfolio_holdings`, `daily_prices`, etc.) are set up for this.
 
-**Use demos with data preparations:** Load the demo tables with `deploy infra --with-demo-data`. In BigQuery Studio, go to **Explorer → Data preparations** and create a new data preparation from one of the demo tables (e.g. `transactions`). Use Gemini suggestions to clean or transform columns, then set a destination table (e.g. in `bq_studio_demo_staging`) and run or schedule it.
+**Use demos with data preparations:** Load the demo tables with `deploy demos` (demo data is loaded by default). In BigQuery Studio, go to **Explorer → Data preparations** and create a new data preparation from one of the demo tables (e.g. `transactions`). Use Gemini suggestions to clean or transform columns, then set a destination table (e.g. in `bq_studio_demo_staging`) and run or schedule it.
 
 **Use demos with pipelines:** The scheduled query created by `deploy demos --with-schedulers` is a simple “pipeline” (one recurring SQL task). For a full pipeline (multiple data preparations + SQL), create a pipeline in the BigQuery UI (**Create new → Pipeline**) and add tasks that reference your data preparations and the SQL in `gs://<bucket>/sql/` (or the local `bq_studio_demos/sql/`).
 
@@ -405,8 +276,8 @@ bqdemo deploy demos --dataset-prefix my_demo --bucket-prefix my-bq-demo
 **Your own CSV data (table name = filename without `.csv`):**
 
 ```bash
-bqdemo deploy infra --csv-dir /path/to/csv/files --no-demo-data
-bqdemo deploy demos
+bqdemo deploy infra
+bqdemo deploy demos --csv-dir /path/to/csv/files --no-demo-data
 ```
 
 **Generate demos locally only (no GCS upload):**
@@ -468,13 +339,13 @@ bq_studio_demos/
 | `--config`, `-c` | Path to YAML config (default: `bq_features_config.yaml` or `BQ_FEATURES_CONFIG`). |
 | `--project-id` | GCP project (overrides config and `GOOGLE_CLOUD_PROJECT`). |
 | `--region` | BigQuery region (e.g. `US`, `EU`). |
-| `--with-demo-data` / `--no-demo-data` | Load bundled finance CSVs (infra). |
-| `--csv-dir` | Directory of CSV files to load (infra). |
+| `--with-demo-data` / `--no-demo-data` | Load bundled finance CSVs into BQ and GCS (demos; default: on). |
+| `--csv-dir` | Directory of CSV files to load instead of bundled demo (demos). |
 | `--with-schedulers` / `--no-schedulers` | Create scheduled query (demos). |
 | `--with-looker` / `--no-looker` | Emit Looker instructions and LookML (demos). |
 | `--upload-to-gcs` / `--no-upload-to-gcs` | Upload SQL, notebooks, and docs to the demo GCS bucket (demos; default: on). |
 
-**Docs commands:** `bqdemo docs inject-project-id` copies `doc/` to a folder (default `doc_with_project/`) with `YOUR_PROJECT` and `<project_id>` replaced by your project ID for easy copy/paste. `bqdemo docs export-docx` mirrors `doc/` to `doc_export/` as `.docx` files (requires [pandoc](https://pandoc.org/installing.html)) for SharePoint upload.
+**Docs commands:** `bqdemo docs inject-project-id` copies `doc/` to a folder (default `doc_with_project/`) with `YOUR_PROJECT` and `<project_id>` replaced by your project ID for easy copy/paste. `bqdemo docs export-docx` exports `doc/` to `doc_export/`: each root `.md` becomes one `.docx`; each subfolder (`features`, `use_cases`) becomes one consolidated `.docx` with all `.md` inside merged in numerical order, **mirroring the folder structure** (one .docx per .md file) (requires [pandoc](https://pandoc.org/installing.html)) for SharePoint upload.
 
 **Upload to Studio:** The command **`bqdemo upload-to-studio`** runs a Playwright script that automates the Studio “Upload SQL query” and “Upload to Notebooks” flows so demo SQL files appear under **Explorer → Queries** and notebooks under **Explorer → Notebooks**. Requires: `pip install playwright && playwright install chromium`. Use `--no-notebooks` or `--no-sql` to upload only one type.
 

@@ -1,0 +1,13 @@
+config {
+  type: "operations",
+  description: "Refresh daily_pnl_summary from pnl_daily (demo data)"
+}
+
+CREATE OR REPLACE TABLE `bq-features-489714.bq_studio_demo.daily_pnl_summary` AS
+SELECT
+  date,
+  strategy,
+  SUM(CAST(pnl AS FLOAT64)) AS total_pnl,
+  COUNT(*) AS num_records
+FROM `bq-features-489714.bq_studio_demo.pnl_daily`
+GROUP BY date, strategy;
